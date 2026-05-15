@@ -21,4 +21,10 @@ class Reservation extends Model
     {
         return $this->belongsTo(RoomType::class);
     }
+
+    // ← TAMBAH INI
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

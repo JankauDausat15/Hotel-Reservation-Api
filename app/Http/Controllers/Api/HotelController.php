@@ -16,7 +16,7 @@ class HotelController extends Controller
     // ==========================================
     public function getRooms()
     {
-        $rooms = RoomType::all();
+        $rooms = RoomType::withCount('reservations')->get();
 
         return response()->json([
             'status'  => true,
@@ -73,6 +73,9 @@ class HotelController extends Controller
             'total_price'    => $totalPrice,
         ]);
 
+        // Load relasi setelah create
+        $reservation->load(['user', 'roomType']);
+
         return response()->json([
             'status'  => true,
             'message' => 'Reservasi berhasil dibuat',
@@ -85,7 +88,7 @@ class HotelController extends Controller
     // ==========================================
     public function getAllReservations()
     {
-        $reservations = Reservation::all();
+        $reservations = Reservation::with(['user', 'roomType'])->get();
 
         return response()->json([
             'status'  => true,
@@ -99,7 +102,7 @@ class HotelController extends Controller
     // ==========================================
     public function getReservationById($id)
     {
-        $reservation = Reservation::find($id);
+        $reservation = Reservation::with(['user', 'roomType'])->find($id);
 
         if (!$reservation) {
             return response()->json([
@@ -120,7 +123,9 @@ class HotelController extends Controller
     // ==========================================
     public function getUserReservations($user_id)
     {
-        $reservations = Reservation::where('user_id', $user_id)->get();
+        $reservations = Reservation::with('roomType')
+            ->where('user_id', $user_id)
+            ->get();
 
         if ($reservations->isEmpty()) {
             return response()->json([
@@ -174,6 +179,9 @@ class HotelController extends Controller
 
         $reservation->update($request->all());
 
+        // Load relasi setelah update
+        $reservation->load(['user', 'roomType']);
+
         return response()->json([
             'status'  => true,
             'message' => 'Reservasi berhasil diupdate',
@@ -198,6 +206,9 @@ class HotelController extends Controller
         $reservation->fill($request->all());
         $reservation->save();
 
+        // Load relasi setelah patch
+        $reservation->load(['user', 'roomType']);
+
         return response()->json([
             'status'  => true,
             'message' => 'Reservasi berhasil diupdate (PATCH)',
@@ -205,14 +216,20 @@ class HotelController extends Controller
         ], 200);
     }
 
+    // ==========================================
+    // GET LATEST RESERVATIONS
+    // ==========================================
     public function getLatestReservations()
-{
-    $reservations = Reservation::latest()->take(5)->get();
+    {
+        $reservations = Reservation::with(['user', 'roomType'])
+            ->latest()
+            ->take(5)
+            ->get();
 
-    return response()->json([
-        'status'  => true,
-        'message' => 'List booking terbaru',
-        'data'    => $reservations
-    ], 200);
-}
+        return response()->json([
+            'status'  => true,
+            'message' => 'List booking terbaru',
+            'data'    => $reservations
+        ], 200);
+    }
 }
