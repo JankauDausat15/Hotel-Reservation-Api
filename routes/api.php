@@ -1,9 +1,8 @@
 <?php
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\HotelController;
-use App\Http\Controllers\Api\AuthController; // ← TAMBAH INI
+use App\Http\Controllers\Api\TransactionController; 
 
 // 1. Mengambil semua tipe kamar
 // Endpoint: GET http://127.0.0.1:8000/api/type-room
@@ -79,3 +78,20 @@ Route::put('/reservations/{id}', [HotelController::class, 'updateReservation']);
 // Body:     { field_yang_mau_diupdate }
 // Response: { status, message, data: { id, ..., user: {}, room_type: {} } }
 Route::patch('/reservations/{id}', [HotelController::class, 'patchReservation']);
+
+//POST    http://127.0.0.1:8000/api/transactions
+//GET     http://127.0.0.1:8000/api/transactions
+//GET     http://127.0.0.1:8000/api/transactions/1
+//GET     http://127.0.0.1:8000/api/transactions/status/pending
+//GET     http://127.0.0.1:8000/api/transactions/status/paid
+//GET     http://127.0.0.1:8000/api/transactions/status/cancelled
+//POST    http://127.0.0.1:8000/api/transactions/1/pay
+//PUT     http://127.0.0.1:8000/api/transactions/1/cancel
+//DELETE  http://127.0.0.1:8000/api/transactions/1
+Route::post('/transactions', [TransactionController::class, 'store']);
+Route::get('/transactions', [TransactionController::class, 'index']);
+Route::get('/transactions/status/{status}', [TransactionController::class, 'filterByStatus']);
+Route::get('/transactions/{id}', [TransactionController::class, 'show']);
+Route::post('/transactions/{id}/pay', [TransactionController::class, 'pay']);
+Route::put('/transactions/{id}/cancel', [TransactionController::class, 'cancel']);
+Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);

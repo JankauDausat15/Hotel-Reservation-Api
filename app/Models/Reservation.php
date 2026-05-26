@@ -22,9 +22,15 @@ class Reservation extends Model
         return $this->belongsTo(RoomType::class);
     }
 
-    // ← TAMBAH INI
+    // Relasi ke User
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Relasi ke Transaction
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
     }
 }
