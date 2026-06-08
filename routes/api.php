@@ -1,12 +1,22 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\HotelController;
 use App\Http\Controllers\Api\TransactionController; 
+use App\Http\Controllers\Api\AuthController;
 
-// 1. Mengambil semua tipe kamar
+/*
+|--------------------------------------------------------------------------
+| API Routes - Amanjiwo Reservation
+|--------------------------------------------------------------------------
+*/
+
+// 1. Mengambil semua tipe kamar (WITH CATEGORY, SEARCH & FILTER HARGA)
+// Endpoint: GET http://127.0.0.1:8000/api/rooms
 // Endpoint: GET http://127.0.0.1:8000/api/type-room
-// Response: { status, message, data: [{ id, name, description, price_per_night, image, reservations_count }] }
+// Response: { status, message, data: [{ id, name, description, price_per_night, image, ... }] }
+Route::get('/rooms', [HotelController::class, 'getRooms']);
 Route::get('/type-room', [HotelController::class, 'getRooms']);
 
 // 2. Mengambil seluruh data reservasi
@@ -14,80 +24,58 @@ Route::get('/type-room', [HotelController::class, 'getRooms']);
 // Response: { status, message, data: [{ id, user_id, room_type_id, ..., user: {}, room_type: {} }] }
 Route::get('/reservations', [HotelController::class, 'getAllReservations']);
 
-// 12. Mengambil booking/reservasi terbaru ← HARUS DI ATAS /{id}
+// 3. Mengambil booking/reservasi terbaru (Top 5)
 // Endpoint: GET http://127.0.0.1:8000/api/reservations/latest
-// Response: { status, message, data: [5 reservasi terbaru dengan relasi user & room_type] }
+// Response: { status, message, data: [5 reservasi terbaru] }
 Route::get('/reservations/latest', [HotelController::class, 'getLatestReservations']);
 
-// 3. Mengambil reservasi berdasarkan ID
+// 4. Mengambil reservasi berdasarkan ID
 // Endpoint: GET http://127.0.0.1:8000/api/reservations/{id}
-// Contoh:   GET http://127.0.0.1:8000/api/reservations/1
-// Response: { status, message, data: { id, ..., user: {}, room_type: {} } }
 Route::get('/reservations/{id}', [HotelController::class, 'getReservationById']);
 
-// 4. Cek ketersediaan kamar
+// 5. Cek ketersediaan kamar
 // Endpoint: GET http://127.0.0.1:8000/api/rooms/availability
 Route::get('/rooms/availability', [HotelController::class, 'checkAvailability']);
+Route::post('/rooms/check-availability', [HotelController::class, 'checkAvailability']);
 
-// 5. Mengambil seluruh data reservasi milik user tertentu
+// 6. Mengambil seluruh data reservasi milik user tertentu
 // Endpoint: GET http://127.0.0.1:8000/api/users/{user_id}/reservations
-// Contoh:   GET http://127.0.0.1:8000/api/users/1/reservations
-// Response: { status, message, data: [{ id, ..., room_type: {} }] }
 Route::get('/users/{user_id}/reservations', [HotelController::class, 'getUserReservations']);
 
-// 6. Membuat reservasi baru
+// 7. Membuat reservasi baru
 // Endpoint: POST http://127.0.0.1:8000/api/reservations
-// Body:     { user_id, room_type_id, customer_name, customer_email, check_in, check_out }
-// Response: { status, message, data: { id, ..., user: {}, room_type: {} } }
+// Body: { user_id, room_type_id, customer_name, customer_email, check_in, check_out }
 Route::post('/reservations', [HotelController::class, 'storeReservation']);
 
-// 7. Registrasi user
+// 8. Registrasi user
 // Endpoint: POST http://127.0.0.1:8000/api/signup
-// Body:     { name, email, password, password_confirmation }
-// Response: { status, message, data: { id, name, email } }
 Route::post('/signup', [AuthController::class, 'signup']);
 
-// 8. Login user
+// 9. Login user
 // Endpoint: POST http://127.0.0.1:8000/api/auth/login
-// Body:     { email, password }
-// Response: { status, message, data: { id, name, email } }
 Route::post('/auth/login', [AuthController::class, 'login']);
 
-// 9. Menghapus reservasi (Cancel Booking)
+// 10. Menghapus reservasi (Cancel Booking)
 // Endpoint: DELETE http://127.0.0.1:8000/api/reservations/{id}
-// Contoh:   DELETE http://127.0.0.1:8000/api/reservations/1
-// Response: { status, message }
 Route::delete('/reservations/{id}', [HotelController::class, 'deleteReservation']);
 
-// 10. Menghapus user
+// 11. Menghapus user
 // Endpoint: DELETE http://127.0.0.1:8000/api/users/{user_id}
-// Contoh:   DELETE http://127.0.0.1:8000/api/users/1
-// Response: { status, message }
 Route::delete('/users/{user_id}', [AuthController::class, 'deleteUser']);
 
-// 11. Update reservasi (PUT - update semua field)
+// 12. Update reservasi (PUT & PATCH)
 // Endpoint: PUT http://127.0.0.1:8000/api/reservations/{id}
-// Contoh:   PUT http://127.0.0.1:8000/api/reservations/1
-// Body:     { user_id, room_type_id, customer_name, customer_email, check_in, check_out }
-// Response: { status, message, data: { id, ..., user: {}, room_type: {} } }
 Route::put('/reservations/{id}', [HotelController::class, 'updateReservation']);
+Route::patch('/reservations/{id}', [HotelController::class, 'updateReservation']);
 
-// Update reservasi (PATCH - update sebagian field)
-// Endpoint: PATCH http://127.0.0.1:8000/api/reservations/{id}
-// Contoh:   PATCH http://127.0.0.1:8000/api/reservations/1
-// Body:     { field_yang_mau_diupdate }
-// Response: { status, message, data: { id, ..., user: {}, room_type: {} } }
-Route::patch('/reservations/{id}', [HotelController::class, 'patchReservation']);
 
-//POST    http://127.0.0.1:8000/api/transactions
-//GET     http://127.0.0.1:8000/api/transactions
-//GET     http://127.0.0.1:8000/api/transactions/1
-//GET     http://127.0.0.1:8000/api/transactions/status/pending
-//GET     http://127.0.0.1:8000/api/transactions/status/paid
-//GET     http://127.0.0.1:8000/api/transactions/status/cancelled
-//POST    http://127.0.0.1:8000/api/transactions/1/pay
-//PUT     http://127.0.0.1:8000/api/transactions/1/cancel
-//DELETE  http://127.0.0.1:8000/api/transactions/1
+// ==========================================
+// TRANSACTION ROUTES (Midtrans/Manual)
+// ==========================================
+// POST    http://127.0.0.1:8000/api/transactions
+// GET     http://127.0.0.1:8000/api/transactions
+// GET     http://127.0.0.1:8000/api/transactions/status/pending
+// POST    http://127.0.0.1:8000/api/transactions/{id}/pay
 Route::post('/transactions', [TransactionController::class, 'store']);
 Route::get('/transactions', [TransactionController::class, 'index']);
 Route::get('/transactions/status/{status}', [TransactionController::class, 'filterByStatus']);

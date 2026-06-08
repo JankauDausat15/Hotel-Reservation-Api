@@ -1,5 +1,4 @@
 <?php
-// App/Http/Controllers/Api/AuthController.php
 
 namespace App\Http\Controllers\Api;
 
@@ -67,6 +66,64 @@ class AuthController extends Controller
         return response()->json([
             'status'  => true,
             'message' => 'Login berhasil',
+            'data'    => $user
+        ], 200);
+    }
+
+    public function getUserDetail($user_id)
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Data user ditemukan',
+            'data'    => $user
+        ], 200);
+    }
+
+    public function updateUser(Request $request, $user_id)
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User tidak ditemukan'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name'     => 'sometimes|required|string|max:255',
+            'email'    => 'sometimes|required|email|unique:users,email,' . $user_id,
+            'password' => 'sometimes|nullable|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Update gagal',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->has('name')) $user->name = $request->name;
+        if ($request->has('email')) $user->email = $request->email;
+        if ($request->has('password') && $request->password != null) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'User berhasil diperbarui',
             'data'    => $user
         ], 200);
     }
